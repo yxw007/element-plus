@@ -247,44 +247,45 @@ describe('Form', () => {
     )
   })
 
-  it('show message', (done) => {
-    const wrapper = mount({
-      setup() {
-        const form = reactive({
-          name: '',
+  it('show message', () =>
+    new Promise((done) => {
+      const wrapper = mount({
+        setup() {
+          const form = reactive({
+            name: '',
+          })
+          return () => (
+            <Form model={form} ref="form">
+              <FormItem
+                label="Name"
+                prop="name"
+                showMessage={false}
+                rules={{
+                  required: true,
+                  message: 'Please input name',
+                  trigger: 'change',
+                  min: 3,
+                  max: 6,
+                }}
+              >
+                <Input v-model={form.name} />
+              </FormItem>
+            </Form>
+          )
+        },
+      })
+      const form = wrapper.findComponent(Form).vm as FormInstance
+      form
+        .validate(async (valid: boolean) => {
+          expect(valid).toBe(false)
+          await nextTick()
+          expect(wrapper.find('.el-form-item__error').exists()).toBe(false)
+          done()
         })
-        return () => (
-          <Form model={form} ref="form">
-            <FormItem
-              label="Name"
-              prop="name"
-              showMessage={false}
-              rules={{
-                required: true,
-                message: 'Please input name',
-                trigger: 'change',
-                min: 3,
-                max: 6,
-              }}
-            >
-              <Input v-model={form.name} />
-            </FormItem>
-          </Form>
-        )
-      },
-    })
-    const form = wrapper.findComponent(Form).vm as FormInstance
-    form
-      .validate(async (valid: boolean) => {
-        expect(valid).toBe(false)
-        await nextTick()
-        expect(wrapper.find('.el-form-item__error').exists()).toBe(false)
-        done()
-      })
-      .catch((e: ValidateFieldsError) => {
-        expect(e).toBeDefined()
-      })
-  })
+        .catch((e: ValidateFieldsError) => {
+          expect(e).toBeDefined()
+        })
+    }))
 
   it('reset field', async () => {
     vi.useFakeTimers()
